@@ -14,42 +14,21 @@ import sys
 # separator=Separator(phone=' ', word=' _ ', syllable='|'),
 separator = Separator(word=" _ ", syllable="|", phone=" ")
 
-phonemizer_zh = EspeakBackend(
-    "cmn", preserve_punctuation=False, with_stress=False, language_switch="remove-flags"
-)
-# phonemizer_zh.separator = separator
+def safe_load_backend(lang):
+    try:
+        return EspeakBackend(
+            lang, preserve_punctuation=False, with_stress=False, language_switch="remove-flags"
+        )
+    except Exception as e:
+        print(f"Warning: Failed to load espeak backend for language '{lang}': {e}")
+        return None
 
-phonemizer_en = EspeakBackend(
-    "en-us",
-    preserve_punctuation=False,
-    with_stress=False,
-    language_switch="remove-flags",
-)
-# phonemizer_en.separator = separator
-
-phonemizer_ja = EspeakBackend(
-    "ja", preserve_punctuation=False, with_stress=False, language_switch="remove-flags"
-)
-# phonemizer_ja.separator = separator
-
-phonemizer_ko = EspeakBackend(
-    "ko", preserve_punctuation=False, with_stress=False, language_switch="remove-flags"
-)
-# phonemizer_ko.separator = separator
-
-phonemizer_fr = EspeakBackend(
-    "fr-fr",
-    preserve_punctuation=False,
-    with_stress=False,
-    language_switch="remove-flags",
-)
-# phonemizer_fr.separator = separator
-
-phonemizer_de = EspeakBackend(
-    "de", preserve_punctuation=False, with_stress=False, language_switch="remove-flags"
-)
-# phonemizer_de.separator = separator
-
+phonemizer_zh = safe_load_backend("cmn")
+phonemizer_en = safe_load_backend("en-us")
+phonemizer_ja = safe_load_backend("ja")
+phonemizer_ko = safe_load_backend("ko")
+phonemizer_fr = safe_load_backend("fr-fr")
+phonemizer_de = safe_load_backend("de")
 
 lang2backend = {
     "zh": phonemizer_zh,
@@ -60,13 +39,15 @@ lang2backend = {
     "de": phonemizer_de,
 }
 
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "mls_en.json"), "r") as f:
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "mls_en.json"), "r", encoding='utf-8') as f:
     json_data = f.read()
 token = json.loads(json_data)
 
 
 def phonemizer_g2p(text, language):
-    langbackend = lang2backend[language]
+    langbackend = lang2backend.get(language)
+    if langbackend is None:
+        raise RuntimeError(f"Espeak backend for language '{language}' is not available. Please check your espeak-ng installation.")
     phonemes = _phonemize(
         langbackend,
         text,

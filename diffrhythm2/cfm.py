@@ -98,10 +98,13 @@ class CFM(nn.Module):
         # create cache
         kv_cache = BlockFlowMatchingCache(text_lengths=text_lens, num_history_block=self.num_history_block)
         cfg_kv_cache = BlockFlowMatchingCache(text_lengths=text_lens, num_history_block=self.num_history_block)
-        cache_time = torch.tensor([1], device=device)[:, None].repeat(batch, self.block_size).half()
+        
+        # Ensure time tensors match the model's dtype
+        dtype = text_emb.dtype
+        cache_time = torch.tensor([1], device=device)[:, None].repeat(batch, self.block_size).to(dtype)
         
         # generate text cache
-        text_time = torch.tensor([-1], device=device)[:, None].repeat(batch, text_emb.shape[1]).half()
+        text_time = torch.tensor([-1], device=device)[:, None].repeat(batch, text_emb.shape[1]).to(dtype)
         text_position_ids = torch.arange(0, text_emb.shape[1], device=device)[None, :].repeat(batch, 1)
         text_attn_mask = torch.ones(batch, 1, text_emb.shape[1], text_emb.shape[1], device=device).bool()
         
@@ -145,7 +148,7 @@ class CFM(nn.Module):
 
                 if t.ndim == 0:
                     t = t.repeat(batch)
-                time = t[:, None].repeat(1, noisy_lens.max())
+                time = t[:, None].repeat(1, noisy_lens.max()).to(dtype)
 
                 pred, *_ = self.transformer(
                     x=noisy_embed, 

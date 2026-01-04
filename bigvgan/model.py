@@ -24,7 +24,7 @@ from huggingface_hub import PyTorchModelHubMixin, hf_hub_download
 
 
 def load_hparams_from_json(path) -> AttrDict:
-    with open(path) as f:
+    with open(path, 'r', encoding='utf-8') as f:
         data = f.read()
     return AttrDict(json.loads(data))
 
@@ -484,7 +484,7 @@ class BigVGAN(
 class Generator(torch.nn.Module):
     def __init__(self, config_file, ckpt_path):
         super().__init__()
-        with open(config_file) as f:
+        with open(config_file, 'r', encoding='utf-8') as f:
             json_config = json.load(f)
         self.h = AttrDict(json_config)
         self.decoder = BigVGAN(self.h)

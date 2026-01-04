@@ -52,7 +52,7 @@ class CNENTokenizer():
     def __init__(self):
         curr_path = os.path.abspath(__file__)
         vocab_path = os.path.join(os.path.dirname(curr_path), "g2p/g2p/vocab.json")
-        with open(vocab_path, 'r') as file:
+        with open(vocab_path, 'r', encoding='utf-8') as file:
             self.phone2id:dict = json.load(file)['vocab']
         self.id2phone = {v:k for (k, v) in self.phone2id.items()}
         from g2p.g2p_generation import chn_eng_g2p
@@ -78,7 +78,7 @@ def prepare_model(repo_id, device):
         local_dir="./ckpt",
         local_files_only=False,
     )
-    with open(diffrhythm2_config_path) as f:
+    with open(diffrhythm2_config_path, 'r', encoding='utf-8') as f:
         model_config = json.load(f)
 
     model_config['use_flex_attn'] = False
@@ -228,7 +228,7 @@ if __name__ == "__main__":
     output_dir = args.output_dir
     os.makedirs(output_dir, exist_ok=True)
     
-    with open(input_jsonl, 'r') as f:
+    with open(input_jsonl, 'r', encoding='utf-8') as f:
         input_info = [json.loads(i.strip()) for i in f.readlines()]
 
     for i in tqdm(range(len(input_info))):
@@ -241,7 +241,7 @@ if __name__ == "__main__":
             continue
 
         # preprocess lyrics
-        with open(lyrics, 'r') as f:
+        with open(lyrics, 'r', encoding='utf-8') as f:
             lyrics = f.read()
         lyrics_token = parse_lyrics(lyrics)
         lyrics_token = torch.tensor(sum(lyrics_token, []), dtype=torch.long, device=device)

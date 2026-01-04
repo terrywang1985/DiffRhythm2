@@ -25,7 +25,7 @@ class PhonemeBpeTokenizer:
         self.text_tokenizers = {}
         self.int_text_tokenizers()
 
-        with open(vacab_path, "r") as f:
+        with open(vacab_path, "r", encoding="utf-8") as f:
             json_data = f.read()
         data = json.loads(json_data)
         self.vocab = data["vocab"]
@@ -33,7 +33,11 @@ class PhonemeBpeTokenizer:
 
     def int_text_tokenizers(self):
         for key, value in self.lang2backend.items():
-            self.text_tokenizers[key] = TextTokenizer(language=value)
+            try:
+                self.text_tokenizers[key] = TextTokenizer(language=value)
+            except Exception as e:
+                print(f"Warning: Failed to initialize TextTokenizer for {key}: {e}")
+                self.text_tokenizers[key] = None
 
     def tokenize(self, text, sentence, language):
 
